@@ -1,6 +1,5 @@
 package com.orzangleli.anivia;
 
-import android.util.Log;
 import com.orzangleli.anivia.util.AniviaLog;
 
 /**

@@ -1,1 +1,1 @@
-include ':app', ':anivia'
+include ':app', ':anivia', ':support'

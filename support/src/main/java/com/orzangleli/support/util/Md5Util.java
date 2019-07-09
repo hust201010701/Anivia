@@ -1,6 +1,5 @@
-package com.orzangleli.anivia.util;
+package com.orzangleli.support.util;
 
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 
 /**

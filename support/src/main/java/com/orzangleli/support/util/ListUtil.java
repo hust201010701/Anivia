@@ -1,4 +1,4 @@
-package com.orzangleli.anivia.util;
+package com.orzangleli.support.util;
 
 import android.support.annotation.Nullable;
 import java.util.ArrayList;

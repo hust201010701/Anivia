@@ -1,7 +1,6 @@
-package com.orzangleli.anivia.generator;
+package com.orzangleli.support.generator;
 
-import com.orzangleli.anivia.util.ListUtil;
-import com.orzangleli.anivia.util.Md5Util;
+import com.orzangleli.support.util.Md5Util;
 
 /**
  * <p>description：方法id 生成器
@@ -18,9 +17,9 @@ import com.orzangleli.anivia.util.Md5Util;
 public class MethodIdGenerator implements Generator {
     /**
      * 约定：
-     * 第一个参数为 完整类名
-     * 第二个参数为 方法名
-     * 第三个参数开始为 参数类型数组
+     * 第一个参数为       完整类名
+     * 第二个参数为       方法名
+     * 第三个参数开始为    参数类型数组
      * @param args
      * @return
      */
