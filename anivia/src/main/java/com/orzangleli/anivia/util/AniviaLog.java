@@ -1,7 +1,6 @@
 package com.orzangleli.anivia.util;
 
 import android.util.Log;
-import com.orzangleli.anivia.Anivia;
 
 /**
  * <p>description：日志工具类
@@ -16,26 +15,40 @@ import com.orzangleli.anivia.Anivia;
  * <p>@version
  */
 public class AniviaLog {
+    
+    /**
+     * 是否是 debug 状态
+     */
+    private static boolean DEBUG = false;
+    
+    public static void setDebug(boolean debug) {
+        DEBUG = debug;
+    }
+    
+    public static boolean isDebug() {
+        return DEBUG;
+    }
+    
     public static void i(String content) {
-        if (Anivia.isDebug()) {
+        if (isDebug()) {
             Log.i("Anivia", " ---> " + content);
         }
     }
     
     public static void w(String content) {
-        if (Anivia.isDebug()) {
+        if (isDebug()) {
             Log.w("Anivia", " ---> " + content);
         }
     }
     
     public static void e(String content) {
-        if (Anivia.isDebug()) {
+        if (isDebug()) {
             Log.e("Anivia", " ---> " + content);
         }
     }
     
     public static void d(String content) {
-        if (Anivia.isDebug()) {
+        if (isDebug()) {
             Log.d("Anivia", " ---> " + content);
         }
     }

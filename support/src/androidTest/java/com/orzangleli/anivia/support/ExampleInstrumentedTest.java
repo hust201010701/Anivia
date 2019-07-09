@@ -1,4 +1,4 @@
-package com.orzangleli.support;
+package com.orzangleli.anivia.support;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -19,6 +19,6 @@ import static org.junit.Assert.*;
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
     
-        assertEquals("com.orzangleli.support.test", appContext.getPackageName());
+        assertEquals("com.orzangleli.anivia.support.test", appContext.getPackageName());
     }
 }

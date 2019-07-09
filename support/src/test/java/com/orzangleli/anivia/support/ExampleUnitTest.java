@@ -1,4 +1,4 @@
-package com.orzangleli.support;
+package com.orzangleli.anivia.support;
 
 import org.junit.Test;
 

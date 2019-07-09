@@ -1,6 +1,6 @@
-package com.orzangleli.support.generator;
+package com.orzangleli.anivia.support.generator;
 
-import com.orzangleli.support.util.Md5Util;
+import com.orzangleli.anivia.support.util.Md5Util;
 
 /**
  * <p>description：方法id 生成器
@@ -15,6 +15,14 @@ import com.orzangleli.support.util.Md5Util;
  * <p>@version
  */
 public class MethodIdGenerator implements Generator {
+    private static class Holder {
+        private static final MethodIdGenerator instance = new MethodIdGenerator();
+    }
+    
+    public static MethodIdGenerator getInstance() {
+        return Holder.instance;
+    }
+    
     /**
      * 约定：
      * 第一个参数为       完整类名

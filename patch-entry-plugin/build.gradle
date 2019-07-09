@@ -1,13 +1,25 @@
-apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'maven'
 
+compileGroovy {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    /**
+     * compile gradleApi()
+     * compile localGroovy()
+     */
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:3.3.2'
+    implementation 'org.javassist:javassist:3.20.0-GA'
+    compile 'com.orzangleli.anivia.support:support:1.0.1-SNAPSHOT'
 }
 
 //group和version
-group='com.orzangleli.anivia.support'
+group='com.orzangleli.anivia.plugin'
 version='1.0.1-SNAPSHOT'
 
 //打包到本地或者远程Maven库

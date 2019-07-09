@@ -1,1 +1,1 @@
-include ':app', ':anivia', ':support'
+include ':app', ':anivia', ':support', ':patch-entry-plugin'

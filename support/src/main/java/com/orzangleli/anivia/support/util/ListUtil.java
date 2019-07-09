@@ -1,6 +1,5 @@
-package com.orzangleli.support.util;
+package com.orzangleli.anivia.support.util;
 
-import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +24,7 @@ public class ListUtil {
     }
     
    
-    public static int getSize(@Nullable Collection collection) {
+    public static int getSize( Collection collection) {
         return collection == null ? 0 : collection.size();
     }
     
@@ -45,7 +44,7 @@ public class ListUtil {
     }
     
    
-    public static <T> String join(@Nullable Collection<T> src, @Nullable String separator) {
+    public static <T> String join( Collection<T> src,  String separator) {
         if (src == null) {
             return "";
         }
@@ -71,7 +70,7 @@ public class ListUtil {
     }
     
    
-    public static @Nullable List<String> split(String raw, String separator) {
+    public static  List<String> split(String raw, String separator) {
         if (null == raw) {
             return null;
         }
@@ -85,7 +84,7 @@ public class ListUtil {
     }
     
    
-    public static @Nullable <V> V getItem(List<V> list, int position) {
+    public static  <V> V getItem(List<V> list, int position) {
         if (isEmpty(list)) {
             return null;
         }

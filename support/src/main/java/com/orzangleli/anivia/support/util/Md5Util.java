@@ -1,4 +1,4 @@
-package com.orzangleli.support.util;
+package com.orzangleli.anivia.support.util;
 
 import java.security.MessageDigest;
 
