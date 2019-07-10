@@ -5,6 +5,9 @@ buildscript {
         maven {
             url uri('file:///Users/zhuanzhuan/LocalRepository')
         }
+        maven {
+            url 'http://artifactory.zhuanspirit.com/artifactory/android-zhuanzhuan/'
+        }
         google()
         jcenter()
     }

@@ -1,6 +1,8 @@
 package com.orzangleli.anivia.plugin
 
+import com.android.SdkConstants
 import javassist.ClassPool
+import javassist.CtClass
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import com.android.build.gradle.internal.pipeline.TransformManager
@@ -11,11 +13,16 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import groovy.io.FileVisitResult
 
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.regex.Matcher
+
 class PatchEntryTransform extends Transform implements Plugin<Project> {
 
     private final static Logger logger = Logging.getLogger(PatchEntryTransform)
     private final static ClassPool classPool = ClassPool.getDefault()
     private Project project
+    private final static PatchEntryProcessor patchEntryProcessor = new PatchEntryProcessor()
 
     @Override
     String getName() {
@@ -62,106 +69,65 @@ class PatchEntryTransform extends Transform implements Plugin<Project> {
         super.transform(context, inputs, referencedInputs, outputProvider, isIncremental)
         System.out.println("------------------Anivia 插桩 开始----------------------")
 
+        File jarFile = outputProvider.getContentLocation("main", getOutputTypes(), getScopes(),
+            Format.JAR);
+        if(!jarFile.getParentFile().exists()){
+            jarFile.getParentFile().mkdirs();
+        }
+        if(jarFile.exists()){
+            jarFile.delete();
+        }
+
+
         //step1:将所有类的路径加入到ClassPool中
         project.android.bootClasspath.each {
             classPool.appendClassPath((String) it.absolutePath)
-            if (it.absolutePath.contains("Patchable")) {
-                System.out.println("Patchable: " + it.absolutePath)
-            }
         }
 
-        appendAllClasses(inputs, classPool)
+        List<CtClass> allClasses = appendAllClasses(inputs, classPool)
+        patchEntryProcessor.setClassPool(classPool)
 
-        PatchEntryProcessor.setClassPool(classPool)
+        patchEntryProcessor.injectCode(allClasses, jarFile)
 
-        inputs.each { TransformInput input ->
-            /**
-             * 遍历目录
-             */
-            input.directoryInputs.each { DirectoryInput directoryInput ->
-
-                File dest = outputProvider.getContentLocation(directoryInput.name, directoryInput.contentTypes,
-                    directoryInput.scopes, Format.DIRECTORY);
-                //这里进行字节码注入处理
-                logger.debug "process directory = ${directoryInput.file.absolutePath}"
-                File tmpDestDir = new File(directoryInput.file.parentFile, "tmp")
-                if(!tmpDestDir.exists()) {
-                    tmpDestDir.mkdirs();
-                }
-
-                processDirectory(directoryInput.file, tmpDestDir);
-                FileUtils.copyDirectory(tmpDestDir, dest);
-                tmpDestDir.deleteDir();
-            }
-
-            /**
-             * 遍历jar
-             */
-            input.jarInputs.each { JarInput jarInput ->
-
-                String destName = jarInput.name;
-                if (destName.endsWith(".jar")) {
-                    destName = destName.substring(0, destName.length() - 4);
-                }
-                File dest = outputProvider.getContentLocation(destName, jarInput.contentTypes,
-                    jarInput.scopes, Format.JAR);
-                //处理jar进行字节码注入处理 TODO
-                logger.error("process jar = " + jarInput.file.absolutePath);
-                if(PatchEntryProcessor.shouldProcessJar(jarInput.file.absolutePath)) {
-                    File tmpDest = File.createTempFile(jarInput.file.name, ".tmp", jarInput.file.parentFile);
-                    PatchEntryProcessor.processJar(jarInput.file, tmpDest);
-                    FileUtils.copyFile(tmpDest, dest, true);
-                    tmpDest.delete();
-                } else {
-                    logger.error("ignore process jar = " + jarInput.file.absolutePath);
-                    FileUtils.copyFile(jarInput.file, dest, true)
-                }
-            }
-        }
-
-
+        System.out.println("------------------Anivia 输出文件："+ jarFile.absolutePath + " ----------------------")
         System.out.println("------------------Anivia 插桩 结束----------------------")
     }
 
-    private void processDirectory(File sourceDir, File destDir) {
-        sourceDir.traverse { inputFile ->
-            if (!inputFile.isDirectory()) {
-                String relativePath = relativize(sourceDir, inputFile)
-                File outputFile = new File(destDir, relativePath)
-                if(PatchEntryProcessor.shouldProcessClass(relativePath)) {
-                    def bytes = PatchEntryProcessor.processClass(inputFile, relativePath)
-                    FileUtils.copyBytesToFile(bytes, outputFile)
-                } else {
-                    logger.error("ignore process classFile = " + inputFile.absolutePath)
-                    FileUtils.copyFile(inputFile, outputFile, true)
-                }
-            }
-            return FileVisitResult.CONTINUE
-        }
-    }
-
-    public static String relativize(final File parent, final File child) {
-        final URI relativeUri = parent.toURI().relativize(child.toURI())
-        return relativeUri.toString()
-    }
-
-    public static void appendAllClasses(Collection<TransformInput> inputs, ClassPool classPool) {
+    public static List<CtClass> appendAllClasses(Collection<TransformInput> inputs, ClassPool classPool) {
+        List<String> classNames = new ArrayList<>()
+        List<CtClass> allClass = new ArrayList<>();
         inputs.each {
             it.directoryInputs.each {
                 def dirPath = it.file.absolutePath
                 classPool.insertClassPath(dirPath)
-                if (dirPath.contains("com.orzangleli.anivia")) {
-                    System.out.println("Patchable: " + dirPath)
+                org.apache.commons.io.FileUtils.listFiles(it.file, null, true).each {
+                    if (it.absolutePath.endsWith(SdkConstants.DOT_CLASS)) {
+                        def className = it.absolutePath.substring(dirPath.length() + 1, it.absolutePath.length() - SdkConstants.DOT_CLASS.length()).replaceAll(
+                            Matcher.quoteReplacement(File.separator), '.')
+                        classNames.add(className)
+                    }
                 }
             }
 
             it.jarInputs.each {
                 classPool.insertClassPath(it.file.absolutePath)
-                if (it.file.absolutePath.contains("Patchable")) {
-                    System.out.println("Patchable: " + it.file.absolutePath)
+                def jarFile = new JarFile(it.file)
+                Enumeration<JarEntry> classes = jarFile.entries();
+                while (classes.hasMoreElements()) {
+                    JarEntry libClass = classes.nextElement();
+                    String className = libClass.getName();
+                    if (className.endsWith(SdkConstants.DOT_CLASS)) {
+                        className = className.substring(0, className.length() - SdkConstants.DOT_CLASS.length()).replaceAll('/', '.')
+                        classNames.add(className)
+                    }
                 }
             }
         }
+
+        for (String className : classNames) {
+            allClass.add(classPool.get(className))
+        }
+        return allClass
     }
 
 }

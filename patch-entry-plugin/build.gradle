@@ -6,6 +6,12 @@ compileGroovy {
     targetCompatibility = 1.7
 }
 
+repositories {
+    maven {
+        url 'http://artifactory.zhuanspirit.com/artifactory/android-zhuanzhuan/'
+    }
+}
+
 dependencies {
     /**
      * compile gradleApi()

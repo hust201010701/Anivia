@@ -15,6 +15,10 @@ import com.orzangleli.anivia.util.AniviaLog;
  * <p>@version
  */
 public class PatchProxy {
+    
+    public static boolean test() {
+        return true;
+    }
     /**
      * 代理是否可以打补丁的方法
      * @param methodId          方法id
@@ -26,7 +30,7 @@ public class PatchProxy {
      * @param returnType        返回值类型
      * @return
      */
-    public static boolean isPatchable(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, Class[] paramTypes, Class returnType) {
+    public static boolean isPatchable(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, String[] paramTypes, String returnType) {
         AniviaLog.i("check isPatchable --> methodId = " + methodId);
         if (patchable == null) {
             return false;
@@ -45,7 +49,7 @@ public class PatchProxy {
      * @param returnType        返回值类型
      * @return
      */
-    public static Object transferAction(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, Class[] paramTypes, Class returnType) {
+    public static Object transferAction(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, String[] paramTypes, String returnType) {
         AniviaLog.i("transferAction --> methodId = " + methodId);
         if (patchable == null) {
             return null;
