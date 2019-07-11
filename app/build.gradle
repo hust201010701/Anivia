@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'PatchEntryPlugin'
+// 生成补丁包插件
+apply plugin: 'GeneratePatchPlugin'
+// 补丁包插桩插件，需要在最后
+//apply plugin: 'PatchEntryPlugin'
 
 android {
     compileSdkVersion 28
@@ -27,5 +30,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 //    api 'com.orzangleli.anivia:anivia:1.0.1-SNAPSHOT'
-    api project(":anivia")
+    implementation project(":anivia")
+    implementation project(":support")
 }

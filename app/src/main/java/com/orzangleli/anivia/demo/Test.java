@@ -1,6 +1,7 @@
 package com.orzangleli.anivia.demo;
 
 import android.util.Log;
+import com.orzangleli.anivia.support.annotation.Repair;
 
 /**
  * <p>description：
@@ -15,7 +16,8 @@ import android.util.Log;
  * <p>@version
  */
 public class Test {
+    @Repair
     public static void test(String str) {
-        Log.i("lxc", str + " ---> test");
+        Log.i("lxc", str + " ---> test repaired");
     }
 }

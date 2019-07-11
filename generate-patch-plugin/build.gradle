@@ -1,0 +1,43 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+compileGroovy {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+repositories {
+    maven {
+        url 'http://artifactory.zhuanspirit.com/artifactory/android-zhuanzhuan/'
+    }
+}
+
+dependencies {
+    /**
+     * compile gradleApi()
+     * compile localGroovy()
+     */
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:3.3.2'
+    implementation 'org.javassist:javassist:3.20.0-GA'
+    compile 'com.orzangleli.anivia.support:support:1.0.1-SNAPSHOT'
+}
+
+//group和version
+group='com.orzangleli.anivia.generatepatchplugin'
+version='1.0.1-SNAPSHOT'
+
+//打包到本地或者远程Maven库
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            //提交到远程服务器：
+            // repository(url: "http://www.xxx.com/repos") {
+            //    authentication(userName: "admin", password: "admin")
+            // }
+            //本地的Maven地址设置为E:/Maven
+            repository(url: uri('file:///Users/zhuanzhuan/LocalRepository'))
+        }
+    }
+}
