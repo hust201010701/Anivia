@@ -21,7 +21,7 @@ import java.util.regex.Matcher
 class PatchGeneratePluginTransform extends Transform implements Plugin<Project> {
 
     private final static Logger logger = Logging.getLogger(PatchGeneratePluginTransform)
-    private final static ClassPool classPool = ClassPool.getDefault()
+    private final static ClassPool classPool = new ClassPool()
     private Project project
     private final static PatchGenerateProcessor patchGenerateProcessor = new PatchGenerateProcessor()
 

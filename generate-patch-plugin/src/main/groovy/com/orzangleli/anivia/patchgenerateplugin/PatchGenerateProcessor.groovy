@@ -3,15 +3,18 @@ package com.orzangleli.anivia.patchgenerateplugin
 import com.android.build.api.transform.TransformInput
 import com.sun.xml.bind.v2.TODO
 import javassist.CannotCompileException
+import javassist.ClassMap
 import javassist.ClassPool
 import javassist.CtBehavior
 import javassist.CtClass
 import javassist.CtField
 import javassist.CtMethod
+import javassist.NotFoundException
 import javassist.bytecode.AccessFlag
 import javassist.expr.Cast
 import javassist.expr.ConstructorCall
 import javassist.expr.ExprEditor
+import javassist.expr.FieldAccess
 import javassist.expr.Handler
 import javassist.expr.Instanceof
 import javassist.expr.MethodCall
@@ -104,7 +107,54 @@ class PatchGenerateProcessor {
 
 
     public CtClass generatePatchClass(Map<CtClass, List<CtBehavior>> allRepairBehaviorMap, ZipOutputStream outStream) {
+        for (CtClass clazz : allRepairBehaviorMap.keySet()) {
+            String repairedClassName = getRepairedClassName(clazz.getName())
+            CtClass ctClass = classPool.makeClass(repairedClassName)
+            ClassMap classMap = new ClassMap();
+            classMap.put(repairedClassName, clazz.getName());
+            classMap.fix(clazz)
+            for (CtBehavior ctMethod : allRepairBehaviorMap.get(clazz)) {
+                CtMethod newCtMethod = new CtMethod(ctMethod, ctClass, classMap);
+                ctClass.addMethod(newCtMethod)
+                newCtMethod.instrument(new ExprEditor() {
+                    @Override
+                    void edit(MethodCall m) throws CannotCompileException {
+                        super.edit(m)
+                    }
 
+                    @Override
+                    void edit(ConstructorCall c) throws CannotCompileException {
+                        super.edit(c)
+                    }
+
+                    @Override
+                    void edit(FieldAccess f) throws CannotCompileException {
+                        super.edit(f)
+                        try {
+                            if (f.isReader()) {
+                                f.replace(ReflectUtils.getFieldString(f.getField(), ctClass.getName(), clazz.getName()));
+                            } else if (f.isWriter()) {
+                                f.replace(ReflectUtils.setFieldString(f.getField(), ctClass.getName(), clazz.getName()));
+                            }
+                        } catch (NotFoundException e) {
+                            e.printStackTrace();
+                            throw new RuntimeException(e.getMessage());
+                        }
+                    }
+                })
+            }
+
+            zipFile(ctClass.toBytecode(), outStream, ctClass.getName().replaceAll("\\.", "/") + ".class");
+        }
+
+    }
+
+    public String getRepairedClassName(String originalClassName) {
+        if (originalClassName == null || !originalClassName.contains(".")) {
+            return originalClassName
+        }
+        String className = originalClassName.substring(originalClassName.lastIndexOf(".") + 1, originalClassName.length())
+        return "com.orzangleli.anivia.patch." + className + "Repaired"
     }
 
     public CtClass generatePatchableClass(Map<CtClass, List<CtBehavior>> allRepairBehaviorMap, ZipOutputStream outStream) {
