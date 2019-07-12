@@ -1,5 +1,6 @@
 package com.orzangleli.anivia;
 
+import com.orzangleli.anivia.support.Patchable;
 import com.orzangleli.anivia.util.AniviaLog;
 
 /**

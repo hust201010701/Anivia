@@ -21,9 +21,12 @@ import javassist.expr.Handler
 import javassist.expr.Instanceof
 import javassist.expr.MethodCall
 import javassist.expr.NewArray
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
+import org.codehaus.groovy.runtime.StringBufferWriter
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.internal.impldep.org.codehaus.plexus.util.StringOutputStream
 
 import java.lang.reflect.Modifier
 import java.util.jar.JarEntry
@@ -164,6 +167,7 @@ class PatchGenerateProcessor {
                 })
             }
             zipFile(ctClass.toBytecode(), outStream, ctClass.getName().replaceAll("\\.", "/") + ".class");
+            classPool.appendClassPath(repairedClassName)
         }
 
     }
@@ -177,7 +181,102 @@ class PatchGenerateProcessor {
     }
 
     public CtClass generatePatchableClass(Map<CtClass, List<CtBehavior>> allRepairBehaviorMap, ZipOutputStream outStream) {
+        classPool.appendClassPath("com.orzangleli.anivia.support.PatchableTemplate")
+        for (CtClass clazz : allRepairBehaviorMap.keySet()) {
+            String patchableClassName = getPatchableClassName(clazz.getName())
+            CtClass ctClass = classPool.getAndRename("com.orzangleli.anivia.support.template.PatchableTemplate", patchableClassName)
+            CtMethod appendPatchableMethod = ctClass.getDeclaredMethod("appendPatchableMethodIds")
+            String appendPatchableBody = ""
+            List<CtBehavior> ctBehaviors = allRepairBehaviorMap.get(clazz)
+            for (CtBehavior ctBehavior : ctBehaviors) {
+                CtClass[] paramTypes = ctBehavior.getParameterTypes()
+                String paramTypeNames = convertClassArrayToStringArray(paramTypes)
+                String []generatorParams = getGeneratorParams(ctBehavior.getDeclaringClass().getName(), ctBehavior.getName(), paramTypeNames)
+                String methodId = MethodIdGenerator.getInstance().generate(generatorParams)
+                appendPatchableBody += "allPatchableMethodIds.add(\""+ methodId +"\");\r\n"
+            }
+            appendPatchableMethod.insertBefore(appendPatchableBody)
 
+            String repairedClassName = getRepairedClassName(clazz.getName())
+            CtMethod transferActionMethod = ctClass.getDeclaredMethod("transferAction")
+            String transferActionMethodBody = ""
+//            transferActionMethodBody += "if (true) {"
+            transferActionMethodBody += repairedClassName + " patchedClass;"
+            transferActionMethodBody += "if (isStaticMethod) {"
+            transferActionMethodBody += "patchedClass = new " + repairedClassName + "(null); }"
+            transferActionMethodBody += "else if (patchedMap.get((" + clazz.getName() + ")object) == null) {"
+            transferActionMethodBody += "patchedClass = new " + repairedClassName + "((" + clazz.getName() + ")object); "
+            transferActionMethodBody += "patchedMap.put(object, patchedClass); }"
+            transferActionMethodBody += "else {"
+            transferActionMethodBody += "patchedClass = patchedMap.get(object); }"
+
+            String transferActionCore = ""
+            for (CtBehavior ctBehavior : ctBehaviors) {
+                if (ctBehavior.getMethodInfo().isMethod()) {
+                    CtClass[] paramTypes = ctBehavior.getParameterTypes()
+                    String paramTypeNames = convertClassArrayToStringArray(paramTypes)
+                    String []generatorParams = getGeneratorParams(ctBehavior.getDeclaringClass().getName(), ctBehavior.getName(), paramTypeNames)
+                    String methodId = MethodIdGenerator.getInstance().generate(generatorParams)
+
+                    String paramExp = ""
+                    for (int i = 0; i < paramTypes.length; i++) {
+                        paramExp += "("+ paramTypes[i].getName() +") paramValues[" + i+ "]"
+                        if (i != paramTypes.length - 1) {
+                            paramExp += " ,"
+                        }
+                    }
+
+                    transferActionCore += "else if (methodId.equals(\"" + methodId + "\")) {"
+                    // 根据返回值类型处理不同场景
+                    String returnTypeInString = ((CtMethod)ctBehavior).getReturnType().getName()
+                    String returnExp = ""
+                    switch (returnTypeInString) {
+                        case "void":
+                            returnExp = "patchedClass." + ctBehavior.getName() + "(" + paramExp + "); "
+                            break;
+                        case "boolean":
+                            returnExp = "return Boolean.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "byte":
+                            returnExp = "return Byte.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "char":
+                            returnExp = "return Char.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "double":
+                            returnExp = "return Double.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "float":
+                            returnExp = "return Float.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "int":
+                            returnExp = "return Integer.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "long":
+                            returnExp = "return Long.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        case "short":
+                            returnExp = "return Short.valueOf(patchedClass." + ctBehavior.getName() + "(" + paramExp + "));"
+                            break;
+                        default:
+                            returnExp = "return patchedClass." + ctBehavior.getName() + "(" + paramExp + ");"
+                            break;
+                    }
+                    transferActionCore += returnExp
+                    transferActionCore += "}"
+                }
+            }
+            if (transferActionCore.contains("else")) {
+                transferActionCore = transferActionCore.substring("else".length() + 1, transferActionCore.length())
+            }
+            transferActionMethodBody += transferActionCore
+
+            System.out.println("transferActionMethodBody:" + transferActionMethodBody)
+
+            transferActionMethod.insertBefore(transferActionMethodBody)
+
+            zipFile(ctClass.toBytecode(), outStream, ctClass.getName().replaceAll("\\.", "/") + ".class");
+        }
     }
 
     protected void zipFile(byte[] classBytesArray, ZipOutputStream zos, String entryName) {
@@ -336,7 +435,7 @@ class PatchGenerateProcessor {
                 if (!hasAddField) {
                     hasAddField = true
                     ClassPool classPool = ctBehavior.getDeclaringClass().getClassPool()
-                    CtClass fieldType = classPool.get("com.orzangleli.anivia.Patchable")
+                    CtClass fieldType = classPool.get("com.orzangleli.anivia.support.Patchable")
                     System.out.println("fieldType: " + fieldType)
                     System.out.println("fieldType in class: " + ctBehavior.getDeclaringClass().getName())
                     CtField patchableFiled = new CtField(fieldType, "patchable", ctClass)

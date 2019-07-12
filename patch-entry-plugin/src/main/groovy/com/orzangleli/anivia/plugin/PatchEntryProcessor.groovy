@@ -52,7 +52,7 @@ class PatchEntryProcessor {
                     if (!hasAddField) {
                         hasAddField = true
                         ClassPool classPool = ctBehavior.getDeclaringClass().getClassPool()
-                        CtClass fieldType = classPool.get("com.orzangleli.anivia.Patchable")
+                        CtClass fieldType = classPool.get("com.orzangleli.anivia.support.Patchable")
                         System.out.println("fieldType: " + fieldType)
                         System.out.println("fieldType in class: " + ctBehavior.getDeclaringClass().getName())
                         CtField patchableFiled = new CtField(fieldType, "patchable", ctClass)
@@ -249,7 +249,7 @@ class PatchEntryProcessor {
                 if (!hasAddField) {
                     hasAddField = true
                     ClassPool classPool = ctBehavior.getDeclaringClass().getClassPool()
-                    CtClass fieldType = classPool.get("com.orzangleli.anivia.Patchable")
+                    CtClass fieldType = classPool.get("com.orzangleli.anivia.support.Patchable")
                     System.out.println("fieldType: " + fieldType)
                     System.out.println("fieldType in class: " + ctBehavior.getDeclaringClass().getName())
                     CtField patchableFiled = new CtField(fieldType, "patchable", ctClass)

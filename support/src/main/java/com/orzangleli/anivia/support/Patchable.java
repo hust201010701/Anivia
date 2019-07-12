@@ -1,4 +1,4 @@
-package com.orzangleli.anivia;
+package com.orzangleli.anivia.support;
 
 /**
  * <p>description：代表可修补的接口

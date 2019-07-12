@@ -18,8 +18,9 @@ import com.orzangleli.anivia.support.annotation.Repair;
 public class Test {
     private int num = 0;
     @Repair
-    public void test(String str) {
+    public String test(String str) {
         num += 1;
         Log.i("lxc", str + " ---> test repaired" + num);
+        return "" + num;
     }
 }
