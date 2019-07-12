@@ -7,8 +7,10 @@ import javassist.ClassMap
 import javassist.ClassPool
 import javassist.CtBehavior
 import javassist.CtClass
+import javassist.CtConstructor
 import javassist.CtField
 import javassist.CtMethod
+import javassist.CtNewConstructor
 import javassist.NotFoundException
 import javassist.bytecode.AccessFlag
 import javassist.expr.Cast
@@ -113,6 +115,22 @@ class PatchGenerateProcessor {
             ClassMap classMap = new ClassMap();
             classMap.put(repairedClassName, clazz.getName());
             classMap.fix(clazz)
+
+            // 添加构造方法
+            CtField originalClass = new CtField(clazz, "originalClass", ctClass)
+            ctClass.addField(originalClass)
+
+            String constructName = repairedClassName
+            if (repairedClassName.contains(".")) {
+                constructName = repairedClassName.substring(repairedClassName.lastIndexOf(".") + 1, repairedClassName.length())
+            }
+
+            String constructMethodBody = ""
+            constructMethodBody += "public " + constructName + "("+ clazz.getName() + " origin) "
+            constructMethodBody += "{ originalClass = origin; }"
+            CtConstructor constructor = CtNewConstructor.make(constructMethodBody, ctClass)
+            ctClass.addConstructor(constructor)
+
             for (CtBehavior ctMethod : allRepairBehaviorMap.get(clazz)) {
                 CtMethod newCtMethod = new CtMethod(ctMethod, ctClass, classMap);
                 ctClass.addMethod(newCtMethod)
@@ -120,6 +138,7 @@ class PatchGenerateProcessor {
                     @Override
                     void edit(MethodCall m) throws CannotCompileException {
                         super.edit(m)
+                        // TODO 方法调用的转换、super方法的转换
                     }
 
                     @Override
@@ -130,6 +149,7 @@ class PatchGenerateProcessor {
                     @Override
                     void edit(FieldAccess f) throws CannotCompileException {
                         super.edit(f)
+                        System.out.println("函数名："  + newCtMethod.getName())
                         try {
                             if (f.isReader()) {
                                 f.replace(ReflectUtils.getFieldString(f.getField(), ctClass.getName(), clazz.getName()));
@@ -143,7 +163,6 @@ class PatchGenerateProcessor {
                     }
                 })
             }
-
             zipFile(ctClass.toBytecode(), outStream, ctClass.getName().replaceAll("\\.", "/") + ".class");
         }
 

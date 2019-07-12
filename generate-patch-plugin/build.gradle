@@ -21,7 +21,7 @@ dependencies {
     compile localGroovy()
     compile 'com.android.tools.build:gradle:3.3.2'
     implementation 'org.javassist:javassist:3.20.0-GA'
-    compile 'com.orzangleli.anivia.support:support:1.0.1-SNAPSHOT'
+    implementation project(":support")
 }
 
 //group和version

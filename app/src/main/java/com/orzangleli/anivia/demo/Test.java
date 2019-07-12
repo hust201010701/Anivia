@@ -16,9 +16,9 @@ import com.orzangleli.anivia.support.annotation.Repair;
  * <p>@version
  */
 public class Test {
-    private static int num = 0;
+    private int num = 0;
     @Repair
-    public static void test(String str) {
+    public void test(String str) {
         num += 1;
         Log.i("lxc", str + " ---> test repaired" + num);
     }
