@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
                     String originalClassStr = next.getKey();
                     String patchableClassStr = next.getValue();
                     
-                    Class originalClass = Class.forName(originalClassStr);
-                    Class patchableClass = Class.forName(patchableClassStr);
+                    Class originalClass = classLoader.loadClass(originalClassStr);
+                    Class patchableClass = classLoader.loadClass(patchableClassStr);
                     Field patchable = originalClass.getField("patchable");
                     Object patchableInstance = patchableClass.newInstance();
                     patchable.set(null, patchableInstance);

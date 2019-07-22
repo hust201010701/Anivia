@@ -24,12 +24,12 @@ class ReflectUtils {
                 }
             }
         } else {
-            stringBuilder.append("java.lang.Object instance;");
+            stringBuilder.append("java.lang.Object instance = null;");
             stringBuilder.append("java.lang.Class clazz;");
             stringBuilder.append(" if(\$0 instanceof " + patchClassName + "){");
             stringBuilder.append("instance=((" + patchClassName + ")\$0)." + "originalClass" + ";")
-            stringBuilder.append("}else{");
-            stringBuilder.append("instance=\$0;");
+//            stringBuilder.append("}else{");
+//            stringBuilder.append("instance=\$0;");
             stringBuilder.append("}");
             stringBuilder.append("com.orzangleli.anivia.support.util.AdvancedReflectUtils" + ".setFieldValue(\"" + field.name + "\",instance,\$1,${field.declaringClass.name}.class);");
         }
@@ -63,11 +63,11 @@ class ReflectUtils {
                 }
             }
         } else {
-            stringBuilder.append("java.lang.Object instance;");
+            stringBuilder.append("java.lang.Object instance = null;");
             stringBuilder.append(" if(\$0 instanceof " + patchClassName + "){");
             stringBuilder.append("instance=((" + patchClassName + ")\$0)." + "originalClass" + ";")
-            stringBuilder.append("}else{");
-            stringBuilder.append("instance=\$0;");
+//            stringBuilder.append("}else{");
+//            stringBuilder.append("instance=\$0;");
             stringBuilder.append("}");
 
             stringBuilder.append("\$_=(\$r) " + "com.orzangleli.anivia.support.util.AdvancedReflectUtils" + ".getFieldValue(\"" + field.name + "\",instance,${field.declaringClass.name}.class);");
