@@ -20,8 +20,8 @@ import java.util.WeakHashMap;
  * <p>@version
  */
 public class PatchableTemplate implements Patchable {
-    private Map<Object, Object> patchedMap = new WeakHashMap<>();
-    private Set<String> allPatchableMethodIds = new HashSet<>();
+    private static final Map<Object, Object> patchedMap = new WeakHashMap<>();
+    private static final Set<String> allPatchableMethodIds = new HashSet<>();
     
     /**
      * 在这个方法里添加所有需要打补丁的方法

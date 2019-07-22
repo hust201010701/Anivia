@@ -208,7 +208,7 @@ class PatchGenerateProcessor {
             transferActionMethodBody += "patchedClass = new " + repairedClassName + "((" + clazz.getName() + ")object); "
             transferActionMethodBody += "patchedMap.put(object, patchedClass); }"
             transferActionMethodBody += "else {"
-            transferActionMethodBody += "patchedClass = patchedMap.get(object); }"
+            transferActionMethodBody += "patchedClass = (" + repairedClassName + ")patchedMap.get(object); }"
 
             String transferActionCore = ""
             for (CtBehavior ctBehavior : ctBehaviors) {
