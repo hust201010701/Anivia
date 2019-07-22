@@ -32,10 +32,10 @@ public class PatchProxy {
      * @return
      */
     public static boolean isPatchable(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, String[] paramTypes, String returnType) {
-        AniviaLog.i("check isPatchable --> methodId = " + methodId);
         if (patchable == null) {
             return false;
         }
+        AniviaLog.i("execute isPatchable --> methodId = " + methodId + "    " + patchable.isPatchable(methodId));
         return patchable.isPatchable(methodId);
     }
     

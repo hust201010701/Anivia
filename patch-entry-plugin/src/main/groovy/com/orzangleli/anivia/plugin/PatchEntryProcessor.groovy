@@ -121,6 +121,7 @@ class PatchEntryProcessor {
                         // isPatchable(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, Class[] paramTypes, Class returnType) {
                         body += "com.orzangleli.anivia.PatchProxy p = null;"
                         body += "if (com.orzangleli.anivia.PatchProxy.isPatchable(\""+ methodId +"\", " + isStaticMethod + ", argThis, patchable, \$args, " + paramTypeNames +", \"" + returnTypeName + "\")) { ";
+                        body += " System.out.println(\"执行patch方法\");"
                         body += getReturnStatement(methodId, isStaticMethod, paramTypeNames, returnTypeName)
                         body += " }"
 //                        System.out.println("body --> " + body)

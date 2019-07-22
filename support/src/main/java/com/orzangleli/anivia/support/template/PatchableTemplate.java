@@ -23,6 +23,10 @@ public class PatchableTemplate implements Patchable {
     private static final Map<Object, Object> patchedMap = new WeakHashMap<>();
     private static final Set<String> allPatchableMethodIds = new HashSet<>();
     
+    public PatchableTemplate() {
+        appendPatchableMethodIds();
+    }
+    
     /**
      * 在这个方法里添加所有需要打补丁的方法
      */

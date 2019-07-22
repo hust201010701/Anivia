@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+import com.orzangleli.anivia.util.AniviaLog;
 import dalvik.system.DexClassLoader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    
+        AniviaLog.setDebug(true);
+        
         final Test test = new Test();
         this.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
