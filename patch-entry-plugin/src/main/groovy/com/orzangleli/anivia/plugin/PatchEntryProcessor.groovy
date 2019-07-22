@@ -35,15 +35,56 @@ import java.util.zip.ZipOutputStream
 class PatchEntryProcessor {
     private final static Logger logger = Logging.getLogger(PatchEntryTransform);
     private ClassPool classPool
+    private List<String> mAllAvailableConfigLines
 
     public void setClassPool(ClassPool cp) {
         classPool = cp
     }
 
+    public void setAllAvailableConfigLines(List<String> list) {
+        mAllAvailableConfigLines = list
+    }
+
+
+    public boolean isInExceptList(String packageName, String className) {
+        for (String line : mAllAvailableConfigLines) {
+            if (line.startsWith("*") && line.endsWith("*")) {
+                line = line.substring(1, line.length() - 1)
+                if (className.contains(line)) {
+                    return true
+                }
+            }
+            if (line.endsWith(".*")) {
+                line = line.substring(0, line.length() - 1)
+                if (className.contains(line)) {
+                    return true
+                }
+            }
+            if (line.startsWith("*.")){
+                line = line.substring(1, line.length())
+                if (className.endsWith(line)) {
+                    return true
+                }
+            }
+            if (className.endsWith(line)) {
+                return true
+            }
+        }
+        return false
+    }
+
     public void injectCode(List<CtClass> ctClasses, File jarFile) {
         ZipOutputStream outStream = new JarOutputStream(new FileOutputStream(jarFile));
         for (CtClass ctClass : ctClasses) {
-            System.out.println("class : " + ctClass)
+//            if (ctClass.getName().contains("PatchProxy")) {
+//                System.out.println("是否排除 PatchProxy： " + ctClass.getPackageName() + "   " + ctClass.getName() + "   " + isInExceptList(ctClass.getPackageName(), ctClass.getName())  + "    " + ctClass.getPackageName().contains("com.orzangleli.anivia"))
+//                throw new Exception("212")
+//            }
+            if (isInExceptList(ctClass.getPackageName(), ctClass.getName())) {
+                zipFile(ctClass.toBytecode(), outStream, ctClass.getName().replaceAll("\\.", "/") + ".class")
+                continue
+            }
+//            System.out.println("class : " + ctClass)
             List<CtBehavior> ctBehaviors = ctClass.getDeclaredBehaviors()
             boolean hasAddField = false
             for (CtBehavior ctBehavior : ctBehaviors) {
@@ -53,8 +94,8 @@ class PatchEntryProcessor {
                         hasAddField = true
                         ClassPool classPool = ctBehavior.getDeclaringClass().getClassPool()
                         CtClass fieldType = classPool.get("com.orzangleli.anivia.support.Patchable")
-                        System.out.println("fieldType: " + fieldType)
-                        System.out.println("fieldType in class: " + ctBehavior.getDeclaringClass().getName())
+//                        System.out.println("fieldType: " + fieldType)
+//                        System.out.println("fieldType in class: " + ctBehavior.getDeclaringClass().getName())
                         CtField patchableFiled = new CtField(fieldType, "patchable", ctClass)
                         patchableFiled.setModifiers(AccessFlag.STATIC | AccessFlag.PUBLIC)
                         ctClass.addField(patchableFiled)
@@ -82,7 +123,7 @@ class PatchEntryProcessor {
                         body += "if (com.orzangleli.anivia.PatchProxy.isPatchable(\""+ methodId +"\", " + isStaticMethod + ", argThis, patchable, \$args, " + paramTypeNames +", \"" + returnTypeName + "\")) { ";
                         body += getReturnStatement(methodId, isStaticMethod, paramTypeNames, returnTypeName)
                         body += " }"
-                        System.out.println("body --> " + body)
+//                        System.out.println("body --> " + body)
                         ctMethod.insertBefore(body)
                     }
                 }
@@ -148,7 +189,7 @@ class PatchEntryProcessor {
                 if(!jarEntry.isDirectory()) {
                     if(jarEntry.getName().endsWith(".class")) {
                         def classPath = inputJar.getAbsolutePath() + File.separator + jarEntry.getName()
-                        System.out.println("inputJar classpath = " + classPath)
+//                        System.out.println("inputJar classpath = " + classPath)
                         CtClass ctClass = classPool.getCtClass(classPath)
                         if (ctClass.isFrozen()) {
                             continue
@@ -190,7 +231,7 @@ class PatchEntryProcessor {
                                     body += "if (com.orzangleli.anivia.PatchProxy.isPatchable(\""+ methodId +"\", " + isStaticMethod + ", argThis, patchable, \$args, " + paramTypeNames +", \"" + returnTypeName + "\")) { ";
                                     body += getReturnStatement(methodId, isStaticMethod, paramTypeNames, returnTypeName)
                                     body += " }"
-                                    System.out.println("body0 --> " + body)
+//                                    System.out.println("body0 --> " + body)
                                     ctMethod.insertBefore(body)
                                 }
                             }
@@ -198,7 +239,7 @@ class PatchEntryProcessor {
 
                         // 将修改后的类，写到目标文件中
                         byte[] bytes = ctClass.toBytecode()
-                        System.out.println(new String(bytes))
+//                        System.out.println(new String(bytes))
                         target.write(bytes);
 
 //                        ClassReader classReader = new ClassReader(getBytes(jarfile, jarEntry));
@@ -232,63 +273,6 @@ class PatchEntryProcessor {
     }
 
 
-    public byte[] processClass(File file, String className) {
-        className = className.replaceAll("/", "\\.")
-        className = className.replaceAll("\\.class", "")
-        System.out.println("class path: " + file.getAbsolutePath())
-        System.out.println("className : " + className)
-        System.out.println("class 1: " + classPool.getOrNull(className))
-        System.out.println("class 2: " + classPool.getCtClass(className))
-        CtClass ctClass = classPool.get(className)
-        System.out.println("class : " + ctClass)
-        List<CtBehavior> ctBehaviors = ctClass.getDeclaredBehaviors()
-        boolean hasAddField = false
-        for (CtBehavior ctBehavior : ctBehaviors) {
-            if (ctBehavior != null) {
-                // 添加一个静态内部变量
-                if (!hasAddField) {
-                    hasAddField = true
-                    ClassPool classPool = ctBehavior.getDeclaringClass().getClassPool()
-                    CtClass fieldType = classPool.get("com.orzangleli.anivia.support.Patchable")
-                    System.out.println("fieldType: " + fieldType)
-                    System.out.println("fieldType in class: " + ctBehavior.getDeclaringClass().getName())
-                    CtField patchableFiled = new CtField(fieldType, "patchable", ctClass)
-                    patchableFiled.setModifiers(AccessFlag.STATIC | AccessFlag.PUBLIC)
-                    ctClass.addField(patchableFiled)
-                }
-                // 遍历每个方法插桩
-                if (!isQualifiedMethod(ctBehavior)) {
-                    continue
-                }
-                // 只对普通方法做处理
-                if (ctBehavior.getMethodInfo().isMethod()) {
-                    CtMethod ctMethod = (CtMethod) ctBehavior
-                    // 是否是静态方法
-                    boolean isStaticMethod = (ctMethod.getModifiers() & AccessFlag.PUBLIC) != 0
-                    String body = "Object argThis = null;"
-                    if (!isStaticMethod) {
-                        body += "argThis = \$0;"
-                    }
-                    CtClass[] paramTypes = ctMethod.getParameterTypes()
-                    String returnTypeName = ctMethod.getReturnType().getName()
-                    String paramTypeNames = convertClassArrayToStringArray(paramTypes)
-                    String []generatorParams = getGeneratorParams(ctMethod.getDeclaringClass().getName(), ctMethod.getName(), paramTypeNames)
-                    String methodId = MethodIdGenerator.getInstance().generate(generatorParams)
-                    // isPatchable(String methodId, boolean isStaticMethod, Object object, Patchable patchable, Object[] paramValues, Class[] paramTypes, Class returnType) {
-                    body += "com.orzangleli.anivia.PatchProxy p = null;"
-                    body += "if (com.orzangleli.anivia.PatchProxy.isPatchable(\""+ methodId +"\", " + isStaticMethod + ", argThis, patchable, \$args, " + paramTypeNames +", \"" + returnTypeName + "\")) { ";
-                    body += getReturnStatement(methodId, isStaticMethod, paramTypeNames, returnTypeName)
-                    body += " }"
-                    System.out.println("body --> " + body)
-                    ctMethod.insertBefore(body)
-                }
-            }
-        }
-
-        // 将修改后的类，写到目标文件中
-        byte[] bytes = ctClass.toBytecode()
-        return bytes
-    }
 
 
     private boolean isQualifiedMethod(CtBehavior it) throws CannotCompileException {

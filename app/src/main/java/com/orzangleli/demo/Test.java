@@ -1,4 +1,4 @@
-package com.orzangleli.anivia.demo;
+package com.orzangleli.demo;
 
 import android.util.Log;
 import com.orzangleli.anivia.support.annotation.Repair;

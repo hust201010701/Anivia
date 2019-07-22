@@ -23,6 +23,7 @@ class PatchEntryTransform extends Transform implements Plugin<Project> {
     private final static ClassPool classPool = ClassPool.getDefault()
     private Project project
     private final static PatchEntryProcessor patchEntryProcessor = new PatchEntryProcessor()
+    private List<String> mAllAvailableConfigLines
 
     @Override
     String getName() {
@@ -59,7 +60,44 @@ class PatchEntryTransform extends Transform implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
         project.android.registerTransform(this)
+        project.extensions.create('anivia', AniviaExtension)
+
+        List<String> totalLines = new ArrayList<>()
+        InputStream inputStream = this.getClass().getResourceAsStream("/anivia-android.txt")
+        BufferedReader innerReader = new BufferedReader(new InputStreamReader(inputStream))
+        String str = null
+        while ((str = innerReader.readLine()) != null) {
+            if (str != null) {
+                totalLines.addAll(str)
+            }
+        }
+        inputStream.close()
+        if (project.anivia.aniviaFile != null) {
+            File outFile = new File(project.projectDir.absolutePath + File.separator + project.anivia.aniviaFile)
+            InputStream outFileInputStream = new FileInputStream(outFile)
+            BufferedReader outFileReader = new BufferedReader(new InputStreamReader(outFileInputStream))
+            while ((str = outFileReader.readLine()) != null) {
+                if (str != null) {
+                    totalLines.addAll(str)
+                }
+            }
+            outFileInputStream.close()
+        }
+        mAllAvailableConfigLines = getAvailableLines(totalLines)
+        for (String line: mAllAvailableConfigLines) {
+            System.out.println("each line ：" + line)
+        }
         System.out.println("------------------Anivia 插桩插件 注册成功----------------------")
+    }
+
+    List<String> getAvailableLines(List<String> totalLines) {
+        List<String> lines = new ArrayList<>()
+        for (String line : totalLines) {
+            if (line != null && "" != line.trim() && !line.startsWith("#")) {
+                lines.add(line)
+            }
+        }
+        return lines
     }
 
     @Override
@@ -86,6 +124,7 @@ class PatchEntryTransform extends Transform implements Plugin<Project> {
 
         List<CtClass> allClasses = appendAllClasses(inputs, classPool)
         patchEntryProcessor.setClassPool(classPool)
+        patchEntryProcessor.setAllAvailableConfigLines(mAllAvailableConfigLines)
 
         patchEntryProcessor.injectCode(allClasses, jarFile)
 

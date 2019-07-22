@@ -2,17 +2,18 @@ apply plugin: 'com.android.application'
 // 生成补丁包插件
 //apply plugin: 'GeneratePatchPlugin'
 // 补丁包插桩插件，需要在最后
-//apply plugin: 'PatchEntryPlugin'
+apply plugin: 'PatchEntryPlugin'
 
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.orzangleli.anivia"
+        applicationId "com.orzangleli.demo"
         minSdkVersion 16
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
     buildTypes {
         release {
@@ -20,7 +21,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
 }
+
+//anivia {
+//    aniviaFile 'proguard-rules.pro'
+//}
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')

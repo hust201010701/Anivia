@@ -1,0 +1,12 @@
+# 内置的 anivia 防止插桩列表， 支持直接指定包名和指定类名
+com.orzangleli.anivia.*
+com.orzangleli.anivia.support.*
+*.BuildConfig
+*R$*
+
+# R 及 R内部类   xx/BuildConfig.class R$dimen.class R$id.class R$integer.class R$drawable.class
+# R$layout.class  R$string.class  R$style.class R$styleable.class
+
+#  com.orzangleli.anivia.util.AniviaLog
+
+# com.orzangleli.anivia.PatchProxy
