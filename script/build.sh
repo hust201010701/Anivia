@@ -1,0 +1,2 @@
+./d2j-jar2dex.sh /Users/zhuanzhuan/AndroidStudioProjects/Anivia/app/build/anivia/patch.jar  -o /Users/zhuanzhuan/AndroidStudioProjects/Anivia/app/build/anivia/patched.dex
+adb push /Users/zhuanzhuan/AndroidStudioProjects/Anivia/app/build/anivia/patched.dex /sdcard/patched.dex

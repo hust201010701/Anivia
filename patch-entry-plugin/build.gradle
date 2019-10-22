@@ -33,7 +33,7 @@ processResources {
 
 //group和version
 group='com.orzangleli.anivia.plugin'
-version='1.0.1-SNAPSHOT'
+version='1.0.4-SNAPSHOT'
 
 //打包到本地或者远程Maven库
 uploadArchives {

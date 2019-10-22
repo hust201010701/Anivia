@@ -35,11 +35,11 @@ public class MethodIdGenerator implements Generator {
         if (args == null || args.length < 2) {
             return "";
         }
-        String paramTypes = "";
+        StringBuilder paramTypes = new StringBuilder();
         for (int i = 2; i < args.length; i++) {
-            paramTypes += args[2] + ",";
+            paramTypes.append(args[i]).append(",");
         }
-        String paramTypesMd5 = Md5Util.encode(paramTypes);
+        String paramTypesMd5 = Md5Util.encode(paramTypes.toString());
         return args[0] + "#" + args[1] + "@" + paramTypesMd5;
     }
 }

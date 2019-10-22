@@ -124,6 +124,7 @@ class PatchEntryProcessor {
                         body += " System.out.println(\"执行patch方法\");"
                         body += getReturnStatement(methodId, isStaticMethod, paramTypeNames, returnTypeName)
                         body += " }"
+                        System.out.println("methodId --> " + methodId)
 //                        System.out.println("body --> " + body)
                         ctMethod.insertBefore(body)
                     }
@@ -232,7 +233,7 @@ class PatchEntryProcessor {
                                     body += "if (com.orzangleli.anivia.PatchProxy.isPatchable(\""+ methodId +"\", " + isStaticMethod + ", argThis, patchable, \$args, " + paramTypeNames +", \"" + returnTypeName + "\")) { ";
                                     body += getReturnStatement(methodId, isStaticMethod, paramTypeNames, returnTypeName)
                                     body += " }"
-//                                    System.out.println("body0 --> " + body)
+                                    System.out.println("methodId --> " + methodId)
                                     ctMethod.insertBefore(body)
                                 }
                             }

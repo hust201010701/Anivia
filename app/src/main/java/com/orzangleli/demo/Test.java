@@ -22,10 +22,10 @@ public class Test {
         num = 10;
     }
     
-    //@Repair
+    @Repair
     public String test(String str) {
         num += 1;
-        //return "Anivia Repaired: " + str + " : " + num;
-        return str + " : " + num;
+        return str + " ### " + num;
     }
+    
 }

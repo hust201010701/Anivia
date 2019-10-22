@@ -82,6 +82,8 @@ class PatchGenerateProcessor {
         if (allRepairBehaviorMap.isEmpty()) {
             throw new IllegalStateException("when you enabled 'GeneratePatchPlugin', you use class {@link com.orzangleli.anivia.support.annotation.Repair} one time at least!")
         }
+
+        throw new IllegalStateException("when you enabled 'GeneratePatchPlugin', build would stop when patch is done")
     }
 
     public CtClass generatePatchConfigClass(Map<CtClass, List<CtBehavior>> allRepairBehaviorMap, ZipOutputStream outStream) {
